@@ -15,7 +15,7 @@ backend and DB on an isolated internal network.
 ## Structure
 
 ```
-cartera/
+CIM/
 ├── CLAUDE.md              # design decisions and guardrails (READ FIRST)
 ├── docker-compose.yml     # orchestrates proxy + backend + db
 ├── Caddyfile              # reverse proxy
