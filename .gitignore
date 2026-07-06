@@ -34,3 +34,6 @@ frontend/.vite/
 *.sqlite
 *.db
 dumps/
+
+# Notas locales
+TODO.md
