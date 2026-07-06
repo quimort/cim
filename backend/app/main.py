@@ -1,18 +1,18 @@
 from fastapi import FastAPI
 
 app = FastAPI(
-    title="Gestor de capital e inversiones",
+    title="Capital and investment manager",
     version="0.1.0",
 )
 
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
-    """Endpoint de salud. Sirve de humo para verificar que la app arranca."""
+    """Health endpoint. Smoke-tests that the app starts up."""
     return {"status": "ok"}
 
 
-# Los routers de cuentas, instrumentos, movimientos y derivados se registran
-# aquí a medida que se implementan:
-#   from app.routers import cuentas, instrumentos, movimientos
-#   app.include_router(cuentas.router, prefix="/api")
+# The accounts, instruments, movements, and derived routers get registered
+# here as they're implemented:
+#   from app.routers import accounts, instruments, movements
+#   app.include_router(accounts.router, prefix="/api")

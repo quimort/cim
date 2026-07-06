@@ -42,11 +42,11 @@ docker compose up --build
 
 ```bash
 cd backend
-uv sync --all-extras
-uv run ruff check .         # lint
-uv run ruff format .        # formatting
-uv run mypy app             # types
-uv run pytest -v            # tests
+poetry install --with dev
+poetry run ruff check .         # lint
+poetry run ruff format .        # formatting
+poetry run mypy app             # types
+poetry run pytest -v            # tests
 ```
 
 These same gates run in CI (`.github/workflows/ci.yml`) on every push and PR.

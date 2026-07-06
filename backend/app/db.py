@@ -10,11 +10,11 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 
 class Base(DeclarativeBase):
-    """Base declarativa para todos los modelos SQLAlchemy."""
+    """Declarative base for all SQLAlchemy models."""
 
 
 def get_db() -> Generator[Session, None, None]:
-    """Dependencia FastAPI: entrega una sesión y la cierra al terminar."""
+    """FastAPI dependency: yields a session and closes it when done."""
     db = SessionLocal()
     try:
         yield db
