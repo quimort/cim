@@ -1,7 +1,7 @@
 [project]
 name = "cartera-backend"
 version = "0.1.0"
-description = "Backend del gestor de capital e inversiones"
+description = "Backend for the capital and investment manager"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115",
@@ -13,27 +13,32 @@ dependencies = [
     "pydantic-settings>=2.7",
 ]
 
-[dependency-groups]
-dev = [
-    "pytest>=8.3",
-    "httpx>=0.28",
-    "ruff>=0.8",
-    "mypy>=1.13",
-]
+[tool.poetry]
+packages = [{ include = "app" }]
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.3"
+httpx = ">=0.28"
+ruff = ">=0.8"
+mypy = ">=1.13"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 line-length = 100
 target-version = "py312"
 
 [tool.ruff.lint]
-# Reglas razonables: errores, imports, bugs comunes, comprensiones, upgrades.
+# Reasonable rule set: errors, imports, common bugs, comprehensions, upgrades.
 select = ["E", "F", "I", "B", "C4", "UP", "SIM"]
 
 [tool.mypy]
 python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
-# Los tests pueden ser algo más laxos
+# Tests can be a bit more lenient
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false

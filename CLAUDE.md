@@ -73,7 +73,7 @@ In phase 1 they're always `manual`/NULL, but the code reads them rather than ass
 - **DB**: PostgreSQL.
 - **Frontend**: React + TypeScript + Vite.
 - **Infra**: Docker Compose. Reverse proxy (Caddy) + backend + Postgres + batch script.
-- **Backend dependency management**: uv (or poetry if preferred — one manager only, no mixing).
+- **Backend dependency management**: Poetry (one manager only, no mixing).
 
 ### RULE: end-to-end typing
 Pydantic models are the contract. They generate OpenAPI, and from OpenAPI
