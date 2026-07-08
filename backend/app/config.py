@@ -6,7 +6,7 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    database_url: str = "postgresql+psycopg://portfolio:portfolio@db:5432/portfolio"
+    database_url: str = "postgresql+psycopg://unset:unset@unset.invalid:5432/unset"
     app_env: str = "development"
 
 
