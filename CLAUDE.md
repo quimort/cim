@@ -65,6 +65,17 @@ the "one movement = one account" rule and lets each account balance on its own.
 A `UNIQUE(source, external_id)` constraint for future import idempotency.
 In phase 1 they're always `manual`/NULL, but the code reads them rather than assuming them.
 
+### RULE: multi-tenant-ready — ownership anchored in `account.owner_id`
+- `account` carries an `owner_id`. Every other entity (`movement`, position,
+  derived views) reaches ownership by joining through its `account`, never
+  by duplicating an owner field elsewhere.
+- No query in `services/` or `routers/` may assume global access. Every
+  read or write path that touches `account`/`movement` must be scoped to
+  the current owner — even in phase 1 with a single user.
+- This is single-user *in practice* today, not single-user *in the schema*.
+  Don't take shortcuts (unscoped `SELECT *`, admin-style endpoints without
+  an owner filter) that would need to be undone to support a second user.
+
 ---
 
 ## Stack
@@ -126,9 +137,13 @@ The golden rule: if it's financial logic, it goes in `services/`, not `routers/`
 
 - **RULE: the real `.env` is NEVER committed.** Only `.env.example` with no values.
   `.gitignore` excludes `.env` from the very first commit.
-- Postgres exposes no port externally — it only talks to the backend over the
-  internal Docker network.
+- The database is **Supabase** (managed, externally-hosted Postgres) — an
+  accepted, intentional exception to "no external exposure": it is reached
+  only over TLS (`sslmode=require`) via the Supabase session pooler, and
+  credentials live only in the uncommitted `.env`.
 - The backend exposes no public port — only the reverse proxy is public-facing.
+  ("No exposing to the internet" now scopes to the backend/proxy boundary,
+  not the database, since the database is Supabase by design.)
 
 ---
 
@@ -177,4 +192,7 @@ not here. See README.
 - No domain logic in `routers/`.
 - No committing `.env`.
 - No mixing two dependency managers.
-- No exposing Postgres or the backend directly to the internet.
+- No exposing the backend directly to the internet (Supabase is the accepted
+  managed-DB exception, reached only over TLS with the session pooler).
+- No query that assumes global access — ownership always traces back to
+  `account.owner_id`.

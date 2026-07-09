@@ -20,9 +20,6 @@ services:
     build: ./backend
     restart: unless-stopped
     env_file: .env
-    depends_on:
-      db:
-        condition: service_healthy
     networks:
       - interna
     # Nota: deliberadamente NO hay sección "ports". El backend solo es
@@ -30,27 +27,12 @@ services:
     # proxy, descomenta temporalmente:
     # ports:
     #   - "8000:8000"
-
-  # --- PostgreSQL: AISLADA, sin puerto al exterior ---
-  db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    env_file: .env
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - interna
-    # Sin "ports": Postgres NUNCA se expone. Solo el backend le habla.
+    # La base de datos es Supabase (Postgres gestionado, externo). El backend
+    # se conecta vía DATABASE_URL en .env (Supabase session pooler).
 
 networks:
   interna:
     driver: bridge
 
 volumes:
-  pgdata:
   caddy_data:
