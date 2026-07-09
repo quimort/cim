@@ -11,7 +11,7 @@ class Account(Base):
     __table_args__ = (UniqueConstraint("owner_id", "name", name="uq_account_owner_name"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    # Isolation anchor (see CLAUDE.md multi-tenant rule). Fixed default today —
+    # Isolation anchor for multi-tenant ownership. Fixed default today —
     # single-user in practice — becomes a FK to `user.id` when multi-user is
     # enabled. Every owned query filters on this, hence the index.
     owner_id: Mapped[int] = mapped_column(default=1, server_default="1", index=True)

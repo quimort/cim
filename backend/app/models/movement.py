@@ -49,7 +49,7 @@ class Movement(Base):
     external_id: Mapped[str | None] = mapped_column(String(200))
 
     # Soft-delete: NULL means the movement is active. Movements are never
-    # updated or physically deleted — see CLAUDE.md's immutable-ledger rule.
+    # updated or physically deleted — the ledger is append-only and immutable.
     voided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
