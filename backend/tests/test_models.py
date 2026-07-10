@@ -1,23 +1,14 @@
-from collections.abc import Generator
 from datetime import UTC, datetime
 from decimal import Decimal
 
 import pytest
-from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.db import Base
-from app.models import Account, ExchangeRate, Instrument, Movement, Price
+from app.models import Account, Category, ExchangeRate, Instrument, Movement, Price
 from app.models.enums import AssetClass, MovementType
 
-
-@pytest.fixture
-def session() -> Generator[Session, None, None]:
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
-    with Session(engine) as session:
-        yield session
+# `session` comes from tests/conftest.py.
 
 
 def _make_account(session: Session, name: str = "Test broker", owner_id: int = 1) -> Account:
@@ -103,13 +94,34 @@ def test_movement_type_check_constraint_rejects_invalid_value(session: Session) 
         session.commit()
 
 
-def test_instrument_asset_class_check_constraint_rejects_invalid_value(session: Session) -> None:
+def test_instrument_asset_class_foreign_key_rejects_unknown_code(session: Session) -> None:
+    """The FK to `asset_class` now does what the old CHECK constraint did."""
     instrument = Instrument(
         name="Broken",
         asset_class="not_a_real_class",
         currency="EUR",
     )
     session.add(instrument)
+    with pytest.raises(IntegrityError):
+        session.commit()
+
+
+def test_instrument_category_foreign_key_rejects_unknown_category(session: Session) -> None:
+    instrument = Instrument(
+        name="Orphan",
+        asset_class=AssetClass.TRADABLE,
+        currency="EUR",
+        category_id=999,
+    )
+    session.add(instrument)
+    with pytest.raises(IntegrityError):
+        session.commit()
+
+
+def test_category_name_is_unique(session: Session) -> None:
+    session.add(Category(name="ETF"))
+    session.commit()
+    session.add(Category(name="ETF"))
     with pytest.raises(IntegrityError):
         session.commit()
 

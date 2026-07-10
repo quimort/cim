@@ -23,7 +23,7 @@ from enum import Enum
 from typing import Self
 from uuid import UUID
 
-from pydantic import AwareDatetime, model_validator
+from pydantic import AwareDatetime, Field, model_validator
 
 from app.models.enums import MovementType
 from app.schemas.common import (
@@ -91,14 +91,20 @@ _TYPE_RULES: dict[MovementType, dict[str, _Rule]] = {
 
 
 class MovementCreate(RequestSchema):
-    occurred_at: AwareDatetime
-    account_id: int
-    instrument_id: int | None = None
-    type: MovementType
-    quantity: PositiveQuantity
-    price: UnitPrice | None = None
-    fee: FeeAmount | None = None
-    currency: CurrencyCode
+    occurred_at: AwareDatetime = Field(description="When it happened. Timezone-aware, required.")
+    account_id: int = Field(description="Must be one of the current owner's accounts.")
+    instrument_id: int | None = Field(
+        default=None, description="Required/forbidden/optional depending on type — see below."
+    )
+    type: MovementType = Field(description="Determines which other fields are allowed.")
+    quantity: PositiveQuantity = Field(
+        description="Always a positive magnitude; direction is implied by type."
+    )
+    price: UnitPrice | None = Field(default=None, description="Unit price. Required for buy/sell.")
+    fee: FeeAmount | None = Field(default=None, description="Optional transaction cost.")
+    currency: CurrencyCode = Field(
+        description="This movement's native currency — not necessarily the account's."
+    )
 
     @model_validator(mode="after")
     def _enforce_type_rules(self) -> Self:
@@ -126,10 +132,10 @@ class MovementRead(ResponseSchema):
     price: MoneyStr | None
     fee: MoneyStr | None
     currency: str
-    transfer_id: UUID | None
-    source: str
-    external_id: str | None
-    voided_at: datetime | None
+    transfer_id: UUID | None = Field(description="Set only for transfer legs; links the two rows.")
+    source: str = Field(description="Where this row came from, e.g. 'manual'.")
+    external_id: str | None = Field(description="External id for imported movements (phase 1.5+).")
+    voided_at: datetime | None = Field(description="Set once annulled. Null means still active.")
     created_at: datetime
 
 
@@ -142,9 +148,11 @@ class TransferCreate(RequestSchema):
     """
 
     occurred_at: AwareDatetime
-    from_account_id: int
-    to_account_id: int
-    instrument_id: int | None = None
+    from_account_id: int = Field(description="Origin account. Must be one of the owner's.")
+    to_account_id: int = Field(description="Destination account. Must differ from the origin.")
+    instrument_id: int | None = Field(
+        default=None, description="Set only when transferring an instrument rather than cash."
+    )
     quantity: PositiveQuantity
     currency: CurrencyCode
 

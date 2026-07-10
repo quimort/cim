@@ -1,5 +1,5 @@
-# Multi-stage: la imagen de build tiene Node y el toolchain; la salida son
-# solo ficheros estáticos que sirve Caddy. Node no viaja a producción.
+# Multi-stage: the build image has Node and the toolchain; the output is
+# just static files served by Caddy. Node never ships to production.
 
 FROM node:22-alpine AS build
 WORKDIR /app
@@ -8,7 +8,7 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# El resultado (dist/) lo monta el proxy Caddy vía volumen en docker-compose,
-# así que esta etapa final solo expone el artefacto compilado.
+# The result (dist/) is mounted by the Caddy proxy via a volume in docker-compose,
+# so this final stage only exposes the compiled artifact.
 FROM scratch AS export
 COPY --from=build /app/dist /dist

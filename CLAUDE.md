@@ -47,9 +47,30 @@ FIRE projections, taxation) will come later and will be built as new
   (`tradable` | `cash` | `loan`). Loan-specific fields
   (`maturity_date`, `expected_interest`, `status`) are NULL for the rest.
   The `asset_class` determines **how it's valued**, not how it's recorded.
+  Also carries a nullable `category_id` — see the two axes below.
+- `asset_class` — a **seeded reference table**. `instrument.asset_class` is a FK
+  to `asset_class.code`.
+- `category` — the **user-managed** grouping taxonomy (full CRUD).
 - `movement` — the atomic, immutable event. The heart of the system.
 - `price` — time series of quotes (populated by the batch script).
 - `exchange_rate` — time series of currency pairs (populated by the batch script).
+
+### RULE: asset_class and category are two different axes
+- `asset_class` answers **how is this valued** — it is the dispatch key of the
+  valuation services (FIFO for `tradable`, ledger balance for `cash`, principal
+  plus accrued interest for `loan`). Each code corresponds to a piece of Python.
+  The set of codes is therefore **closed and code-level**: the table exists so the
+  DB can enforce it by FK and the UI can read labels, *not* so new classes can be
+  invented at runtime. `/asset-classes` is read-only; adding a class means writing
+  a valuation strategy and shipping a migration. The `AssetClass` enum stays the
+  dispatch key, and `tests/test_asset_class_sync.py` asserts the enum, the seed
+  constant, and the migration's copy all agree — drift fails CI, not production.
+- `category` answers **how do I want to see it grouped** (ETF, crypto, real
+  estate). Open, user-managed, never touches valuation. It carries **no link back
+  to `asset_class`** — the two are orthogonal (a REIT is `tradable` and grouped
+  as `real estate`), and coupling them would force nonsense mappings.
+- Categories are **soft-deleted** (`is_active`), never removed: instruments point
+  at them and historical allocation reports must keep resolving.
 
 ### Movement types (closed enum)
 `purchase`, `sale`, `dividend`, `interest`, `fee`, `deposit`, `withdrawal`,
@@ -104,9 +125,13 @@ Three families of endpoints:
 
 1. **Write** (masters + ledger):
    - `/accounts` — CRUD (editable: rename, deactivate).
-   - `/instruments` — CRUD (editable). Filterable by `?asset_class=`.
+   - `/instruments` — CRUD (editable). Filterable by `?asset_class=`, `?category_id=`.
+   - `/categories` — CRUD (editable; DELETE is a soft-delete via `is_active`).
    - `/movements` — **append + read + annulment**. GET, POST, soft-DELETE.
      **RULE: NEVER implement PUT on movements.**
+
+1b. **Reference** (read-only, seeded by migration):
+   - `/asset-classes` — GET only. See "asset_class and category are two different axes".
 
 2. **Derived** (read-only, computed from the ledger, no POST/PUT):
    - `/positions` — current positions, FIFO cost, unrealized P&L.

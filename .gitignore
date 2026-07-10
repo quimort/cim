@@ -1,4 +1,4 @@
-# Secretos — NUNCA commitear
+# Secrets — NEVER commit
 .env
 *.env
 !.env.example
@@ -30,10 +30,10 @@ frontend/.vite/
 .DS_Store
 *.swp
 
-# Datos locales / dumps
+# Local data / dumps
 *.sqlite
 *.db
 dumps/
 
-# Notas locales
+# Local notes
 TODO.md

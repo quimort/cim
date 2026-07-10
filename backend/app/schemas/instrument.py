@@ -19,12 +19,19 @@ from app.schemas.common import CurrencyCode, InterestRate, MoneyStr, RequestSche
 
 class InstrumentCreate(RequestSchema):
     name: str = Field(min_length=1, max_length=200)
-    symbol: str | None = Field(default=None, min_length=1, max_length=50)
-    asset_class: AssetClass
-    currency: CurrencyCode
-    maturity_date: date | None = None
-    expected_interest: InterestRate | None = None
-    status: LoanStatus | None = None
+    symbol: str | None = Field(default=None, min_length=1, max_length=50, description="Ticker.")
+    asset_class: AssetClass = Field(
+        description="The valuation dispatch key. Fixed for the instrument's lifetime."
+    )
+    currency: CurrencyCode = Field(description="ISO 4217 code. Fixed for the instrument's life.")
+    category_id: int | None = Field(
+        default=None, description="Optional grouping (ETF, crypto, ...). Never affects valuation."
+    )
+    maturity_date: date | None = Field(default=None, description="Loan only.")
+    expected_interest: InterestRate | None = Field(default=None, description="Loan only.")
+    status: LoanStatus | None = Field(
+        default=None, description="Loan only. Defaults to 'active' when omitted."
+    )
 
     @model_validator(mode="after")
     def _enforce_loan_fields(self) -> Self:
@@ -55,6 +62,9 @@ class InstrumentUpdate(RequestSchema):
     name: str | None = Field(default=None, min_length=1, max_length=200)
     symbol: str | None = Field(default=None, min_length=1, max_length=50)
     is_active: bool | None = None
+    category_id: int | None = Field(
+        default=None, description="Pass null to uncategorise. Must reference an active category."
+    )
     maturity_date: date | None = None
     expected_interest: InterestRate | None = None
     status: LoanStatus | None = None
@@ -66,6 +76,7 @@ class InstrumentRead(ResponseSchema):
     symbol: str | None
     asset_class: AssetClass
     currency: str
+    category_id: int | None
     maturity_date: date | None
     expected_interest: MoneyStr | None
     status: LoanStatus | None

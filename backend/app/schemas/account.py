@@ -15,9 +15,13 @@ from app.schemas.common import CurrencyCode, RequestSchema, ResponseSchema
 
 
 class AccountCreate(RequestSchema):
-    name: str = Field(min_length=1, max_length=100)
-    type: str = Field(min_length=1, max_length=50)
-    currency: CurrencyCode
+    name: str = Field(min_length=1, max_length=100, description="Unique per owner.")
+    type: str = Field(
+        min_length=1, max_length=50, description="Free-text kind, e.g. 'broker', 'bank'."
+    )
+    currency: CurrencyCode = Field(
+        description="ISO 4217 code. Fixed for the account's lifetime."
+    )
 
 
 class AccountUpdate(RequestSchema):
@@ -29,7 +33,9 @@ class AccountUpdate(RequestSchema):
 
     name: str | None = Field(default=None, min_length=1, max_length=100)
     type: str | None = Field(default=None, min_length=1, max_length=50)
-    is_active: bool | None = None
+    is_active: bool | None = Field(
+        default=None, description="Set to false to deactivate. There is no hard delete."
+    )
 
 
 class AccountRead(ResponseSchema):
