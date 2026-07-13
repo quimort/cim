@@ -1,14 +1,11 @@
 import json
-from collections.abc import Generator
 from datetime import UTC, date, datetime
 from decimal import Decimal
 
 import pytest
 from pydantic import ValidationError
-from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from app.db import Base
 from app.models import Account, ExchangeRate, Instrument, Movement, Price
 from app.models.enums import AssetClass, LoanStatus, MovementType
 from app.schemas.account import AccountRead, AccountUpdate
@@ -17,13 +14,7 @@ from app.schemas.instrument import InstrumentCreate, InstrumentRead, InstrumentU
 from app.schemas.movement import MovementCreate, MovementRead
 from app.schemas.price import PriceRead
 
-
-@pytest.fixture
-def session() -> Generator[Session, None, None]:
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
-    with Session(engine) as session:
-        yield session
+# `session` comes from tests/conftest.py.
 
 
 def test_account_read_from_orm_has_no_owner_id(session: Session) -> None:

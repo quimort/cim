@@ -1,5 +1,5 @@
 services:
-  # --- Reverse proxy: lo ÚNICO expuesto al exterior ---
+  # --- Reverse proxy: the ONLY thing exposed to the outside world ---
   proxy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -15,20 +15,20 @@ services:
     networks:
       - interna
 
-  # --- Backend FastAPI: SIN puerto público, solo red interna ---
+  # --- FastAPI backend: NO public port, internal network only ---
   backend:
     build: ./backend
     restart: unless-stopped
     env_file: .env
     networks:
       - interna
-    # Nota: deliberadamente NO hay sección "ports". El backend solo es
-    # accesible desde la red interna (el proxy). Para desarrollo local sin
-    # proxy, descomenta temporalmente:
+    # Note: there is deliberately NO "ports" section. The backend is only
+    # reachable from the internal network (the proxy). For local development
+    # without the proxy, temporarily uncomment:
     # ports:
     #   - "8000:8000"
-    # La base de datos es Supabase (Postgres gestionado, externo). El backend
-    # se conecta vía DATABASE_URL en .env (Supabase session pooler).
+    # The database is Supabase (managed, externally-hosted Postgres). The backend
+    # connects via DATABASE_URL in .env (Supabase session pooler).
 
 networks:
   interna:

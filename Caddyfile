@@ -1,14 +1,14 @@
-# Configuración del reverse proxy.
-# En local: usa "localhost". En producción: sustituye por tu dominio y Caddy
-# gestiona HTTPS automáticamente vía Let's Encrypt.
+# Reverse proxy configuration.
+# In local dev: use "localhost". In production: swap in your domain and Caddy
+# handles HTTPS automatically via Let's Encrypt.
 
 localhost {
-	# Las llamadas a la API van al backend por la red interna.
+	# API calls go to the backend over the internal network.
 	handle /api/* {
 		reverse_proxy backend:8000
 	}
 
-	# Todo lo demás: los ficheros estáticos de React (SPA).
+	# Everything else: React's static files (SPA).
 	handle {
 		root * /srv
 		try_files {path} /index.html

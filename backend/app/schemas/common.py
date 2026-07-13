@@ -107,3 +107,11 @@ class ResponseSchema(BaseModel):
     """Base for read shapes, built directly from ORM objects."""
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ErrorDetail(BaseModel):
+    """Shape of every 4xx response. Matches what ``main.py``'s domain-error
+    handlers return for ``NotFoundError`` (404), ``ConflictError`` (409), and
+    ``DomainRuleError`` (422)."""
+
+    detail: str = Field(description="Human-readable explanation of what went wrong.")
