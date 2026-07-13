@@ -1,7 +1,16 @@
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
-from app.routers import accounts, asset_classes, categories, instruments, movements
+from app.routers import (
+    accounts,
+    allocation,
+    asset_classes,
+    categories,
+    instruments,
+    movements,
+    net_worth,
+    positions,
+)
 from app.services.errors import ConflictError, DomainRuleError, NotFoundError
 
 _DESCRIPTION = """
@@ -75,6 +84,28 @@ _TAGS_METADATA = [
             "`POST /movements/transfer` and always produces two linked rows."
         ),
     },
+    {
+        "name": "positions",
+        "description": (
+            "Derived, read-only: current tradable holdings, FIFO cost basis, "
+            "market value, and unrealized P&L. Nothing is stored — every request "
+            "replays the ledger."
+        ),
+    },
+    {
+        "name": "net-worth",
+        "description": (
+            "Derived, read-only: total net worth in EUR, as of any date "
+            "(`?date=`), and its evolution over time (`/net-worth/series`)."
+        ),
+    },
+    {
+        "name": "allocation",
+        "description": (
+            "Derived, read-only: net worth broken down by `asset_class`, "
+            "`category`, `currency`, or `account` (`?by=`)."
+        ),
+    },
 ]
 
 app = FastAPI(
@@ -123,3 +154,6 @@ app.include_router(asset_classes.router, prefix="/api")
 app.include_router(categories.router, prefix="/api")
 app.include_router(instruments.router, prefix="/api")
 app.include_router(movements.router, prefix="/api")
+app.include_router(positions.router, prefix="/api")
+app.include_router(net_worth.router, prefix="/api")
+app.include_router(allocation.router, prefix="/api")

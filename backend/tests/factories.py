@@ -13,6 +13,7 @@ from decimal import Decimal
 from sqlalchemy.orm import Session
 
 from app.models.account import Account
+from app.models.category import Category
 from app.models.enums import MovementType
 from app.models.exchange_rate import ExchangeRate
 from app.models.instrument import Instrument
@@ -46,6 +47,7 @@ def make_instrument(
     currency: str = "EUR",
     expected_interest: str | None = None,
     maturity_date: date | None = None,
+    category_id: int | None = None,
 ) -> Instrument:
     instrument = Instrument(
         name=f"instrument-{next(_counter)}",
@@ -53,10 +55,18 @@ def make_instrument(
         currency=currency,
         expected_interest=Decimal(expected_interest) if expected_interest is not None else None,
         maturity_date=maturity_date,
+        category_id=category_id,
     )
     session.add(instrument)
     session.commit()
     return instrument
+
+
+def make_category(session: Session, *, name: str | None = None) -> Category:
+    category = Category(name=name if name is not None else f"category-{next(_counter)}")
+    session.add(category)
+    session.commit()
+    return category
 
 
 def make_movement(

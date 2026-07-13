@@ -5,7 +5,17 @@ file only checks that the documentation exists — not that it's phrased well.
 
 from fastapi.testclient import TestClient
 
-_EXPECTED_TAGS = {"health", "accounts", "asset-classes", "categories", "instruments", "movements"}
+_EXPECTED_TAGS = {
+    "health",
+    "accounts",
+    "asset-classes",
+    "categories",
+    "instruments",
+    "movements",
+    "positions",
+    "net-worth",
+    "allocation",
+}
 
 
 def test_app_has_a_description(client: TestClient) -> None:

@@ -95,3 +95,53 @@ class NetWorthReport:
     as_of: date
     total_eur: Decimal
     items: tuple[AssetValuation, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class ValuedPosition:
+    """One tradable position enriched with market price and instrument name.
+
+    ``market_value`` / ``value_eur`` / ``unrealized_pnl`` are ``None`` for a
+    closed position (quantity zero) — no price lookup is done for it, since a
+    closed position has no market exposure left to value.
+    """
+
+    instrument_id: int
+    instrument_name: str
+    quantity: Decimal
+    cost_basis: Decimal
+    realized_pnl: Decimal
+    currency: str
+    market_value: Decimal | None
+    unrealized_pnl: Decimal | None
+    value_eur: Decimal | None
+
+
+@dataclass(frozen=True, slots=True)
+class NetWorthPoint:
+    as_of: date
+    total_eur: Decimal
+
+
+@dataclass(frozen=True, slots=True)
+class NetWorthSeries:
+    interval: str
+    points: tuple[NetWorthPoint, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class AllocationBucket:
+    """One slice of the allocation pie. ``key`` is ``None`` for "uncategorized"."""
+
+    key: str | None
+    label: str
+    value_eur: Decimal
+    weight: Decimal | None
+
+
+@dataclass(frozen=True, slots=True)
+class AllocationReport:
+    as_of: date
+    dimension: str
+    total_eur: Decimal
+    buckets: tuple[AllocationBucket, ...]
