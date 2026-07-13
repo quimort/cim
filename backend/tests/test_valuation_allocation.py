@@ -134,9 +134,7 @@ def test_category_dimension_groups_instruments_and_flags_uncategorized(session: 
     assert crypto_bucket.label == "Crypto"
     assert crypto_bucket.value_eur == Decimal("50")
 
-    uncategorized_value = sum(
-        bucket.value_eur for bucket in report.buckets if bucket.key is None
-    )
+    uncategorized_value = sum(bucket.value_eur for bucket in report.buckets if bucket.key is None)
     # Cash (from the -100 spent on each purchase) plus the uncategorized stock.
     assert uncategorized_value == Decimal("-100") + Decimal("50")
     assert report.total_eur == net_worth(session, OWNER, as_of=as_of).total_eur

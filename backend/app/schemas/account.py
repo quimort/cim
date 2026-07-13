@@ -19,9 +19,7 @@ class AccountCreate(RequestSchema):
     type: str = Field(
         min_length=1, max_length=50, description="Free-text kind, e.g. 'broker', 'bank'."
     )
-    currency: CurrencyCode = Field(
-        description="ISO 4217 code. Fixed for the account's lifetime."
-    )
+    currency: CurrencyCode = Field(description="ISO 4217 code. Fixed for the account's lifetime.")
 
 
 class AccountUpdate(RequestSchema):

@@ -48,7 +48,7 @@ _TAGS_METADATA = [
         "description": (
             "Where money or assets live (bank, broker, exchange). Each has a "
             "fixed currency and is owned by the current user. No hard delete: "
-            "deactivate via `PATCH {\"is_active\": false}`."
+            'deactivate via `PATCH {"is_active": false}`.'
         ),
     },
     {

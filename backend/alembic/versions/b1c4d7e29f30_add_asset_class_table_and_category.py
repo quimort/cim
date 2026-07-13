@@ -90,9 +90,7 @@ def upgrade() -> None:
     op.create_foreign_key(
         "fk_instrument_category_id", "instrument", "category", ["category_id"], ["id"]
     )
-    op.create_index(
-        op.f("ix_instrument_category_id"), "instrument", ["category_id"], unique=False
-    )
+    op.create_index(op.f("ix_instrument_category_id"), "instrument", ["category_id"], unique=False)
 
 
 def downgrade() -> None:

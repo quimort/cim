@@ -98,9 +98,7 @@ def _group_by_currency(
 def _group_by_category(
     db: Session, report: NetWorthReport
 ) -> tuple[dict[str | None, Decimal], dict[str | None, str]]:
-    instrument_ids = {
-        item.instrument_id for item in report.items if item.instrument_id is not None
-    }
+    instrument_ids = {item.instrument_id for item in report.items if item.instrument_id is not None}
     category_by_instrument: dict[int, int | None] = {}
     if instrument_ids:
         instrument_stmt = select(Instrument.id, Instrument.category_id).where(
@@ -193,9 +191,7 @@ def _loan_principal_by_account(events: list[Movement]) -> dict[int, Decimal]:
 def _allocation_by_account(db: Session, owner_id: int, as_of: date) -> AllocationReport:
     accounts = {
         account.id: account.name
-        for account in db.execute(
-            select(Account).where(Account.owner_id == owner_id)
-        ).scalars()
+        for account in db.execute(select(Account).where(Account.owner_id == owner_id)).scalars()
     }
     totals: defaultdict[str | None, Decimal] = defaultdict(lambda: _ZERO)
 

@@ -16,6 +16,4 @@ def error_responses(*pairs: tuple[int, str]) -> dict[int | str, dict[str, Any]]:
     see ``ErrorDetail``); this just documents which codes apply to which endpoint
     without repeating that schema by hand everywhere.
     """
-    return {
-        code: {"model": ErrorDetail, "description": description} for code, description in pairs
-    }
+    return {code: {"model": ErrorDetail, "description": description} for code, description in pairs}

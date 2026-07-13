@@ -200,14 +200,10 @@ def test_unknown_instrument_is_404(client: TestClient, account_id: int) -> None:
 
 
 @pytest.mark.parametrize("method", ["put", "patch"])
-def test_a_movement_can_never_be_updated(
-    client: TestClient, account_id: int, method: str
-) -> None:
+def test_a_movement_can_never_be_updated(client: TestClient, account_id: int, method: str) -> None:
     """RULE: never implement PUT on movements. Asserted, not merely documented."""
     movement = _deposit(client, account_id)
-    response = getattr(client, method)(
-        f"{MOVEMENTS}/{movement['id']}", json={"quantity": "999999"}
-    )
+    response = getattr(client, method)(f"{MOVEMENTS}/{movement['id']}", json={"quantity": "999999"})
     assert response.status_code == 405
 
 
