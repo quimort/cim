@@ -24,3 +24,13 @@ class LoanStatus(StrEnum):
     ACTIVE = "active"
     REPAID = "repaid"
     DEFAULTED = "defaulted"
+
+
+class PriceSource(StrEnum):
+    """Which market-data provider the price batch script (task 1f) fetches from.
+
+    NULL on an instrument means the batch skips it (not priced automatically).
+    """
+
+    YFINANCE = "yfinance"
+    COINGECKO = "coingecko"

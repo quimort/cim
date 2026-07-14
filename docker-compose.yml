@@ -30,6 +30,17 @@ services:
     # The database is Supabase (managed, externally-hosted Postgres). The backend
     # connects via DATABASE_URL in .env (Supabase session pooler).
 
+  # --- Price/FX batch (task 1f): one-shot, not started by `up` ---
+  # Run with: docker compose run --rm batch
+  batch:
+    build: ./backend
+    profiles: ["batch"]
+    env_file: .env
+    networks:
+      - interna
+    restart: "no"
+    command: ["python", "-m", "scripts.update_prices"]
+
 networks:
   interna:
     driver: bridge

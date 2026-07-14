@@ -179,6 +179,20 @@ def test_price_instrument_date_unique_constraint(session: Session) -> None:
         session.commit()
 
 
+def test_instrument_price_source_check_constraint_rejects_invalid_value(
+    session: Session,
+) -> None:
+    instrument = Instrument(
+        name="Broken",
+        asset_class=AssetClass.TRADABLE,
+        currency="EUR",
+        price_source="not_a_real_provider",
+    )
+    session.add(instrument)
+    with pytest.raises(IntegrityError):
+        session.commit()
+
+
 def test_exchange_rate_date_pair_unique_constraint(session: Session) -> None:
     today = datetime.now(UTC).date()
     session.add(

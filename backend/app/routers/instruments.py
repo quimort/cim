@@ -25,7 +25,11 @@ _ASSET_CLASS_FILTER = Query(default=None, description="Filter by valuation dispa
     summary="Create an instrument",
     responses=error_responses(
         (404, "category_id was given but no such category exists."),
-        (422, "Loan-only fields were set on a non-loan, or the category is inactive."),
+        (
+            422,
+            "Loan-only or pricing fields were set on a mismatched asset_class, "
+            "the category is inactive, or price_source/provider_ref weren't set together.",
+        ),
     ),
 )
 def create_instrument(payload: InstrumentCreate, db: DbSession) -> Instrument:
@@ -64,7 +68,11 @@ def get_instrument(instrument_id: int, db: DbSession) -> Instrument:
     summary="Update an instrument",
     responses=error_responses(
         (404, "No instrument with this id, or category_id refers to a nonexistent category."),
-        (422, "Loan-only fields were set on a non-loan, or the new category is inactive."),
+        (
+            422,
+            "Loan-only or pricing fields were set on a mismatched asset_class, "
+            "the new category is inactive, or price_source/provider_ref weren't set together.",
+        ),
     ),
 )
 def update_instrument(instrument_id: int, payload: InstrumentUpdate, db: DbSession) -> Instrument:

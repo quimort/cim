@@ -21,13 +21,13 @@ CIM/
 ├── Caddyfile              # reverse proxy
 ├── .env.example           # secrets template (real .env is not committed)
 ├── backend/
-│   └── app/
-│       ├── models/        # SQLAlchemy (DB only)
-│       ├── schemas/       # Pydantic (API contracts, amounts as str)
-│       ├── routers/       # endpoints (HTTP only, no domain logic)
-│       └── services/      # financial logic: FIFO, accrual, consolidation
-├── frontend/              # React + TS + Vite
-└── scripts/               # price batch job (writes directly to Postgres)
+│   ├── app/
+│   │   ├── models/        # SQLAlchemy (DB only)
+│   │   ├── schemas/       # Pydantic (API contracts, amounts as str)
+│   │   ├── routers/       # endpoints (HTTP only, no domain logic)
+│   │   └── services/      # financial logic: FIFO, accrual, consolidation
+│   └── scripts/           # price/FX batch job (writes directly to Postgres)
+└── frontend/              # React + TS + Vite
 ```
 
 ## Development startup
@@ -45,11 +45,18 @@ cd backend
 poetry install --with dev
 poetry run ruff check .         # lint
 poetry run ruff format .        # formatting
-poetry run mypy app             # types
+poetry run mypy app scripts     # types
 poetry run pytest -v            # tests
 ```
 
 These same gates run in CI (`.github/workflows/ci.yml`) on every push and PR.
+
+## Market data batch
+
+`backend/scripts/update_prices.py` fetches quotes (yfinance / CoinGecko) and
+FX rates (Frankfurter/ECB) and writes them directly to Postgres. Idempotent —
+safe to re-run. See [`backend/scripts/README.md`](./backend/scripts/README.md)
+for usage and scheduling (cron / systemd timer).
 
 ## Working with Claude Code
 

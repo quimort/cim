@@ -7,7 +7,8 @@ COPY pyproject.toml ./
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir \
       "fastapi>=0.115" "uvicorn[standard]>=0.32" "sqlalchemy>=2.0" \
-      "alembic>=1.14" "psycopg[binary]>=3.2" "pydantic>=2.10" "pydantic-settings>=2.7"
+      "alembic>=1.14" "psycopg[binary]>=3.2" "pydantic>=2.10" "pydantic-settings>=2.7" \
+      "yfinance>=0.2" "httpx>=0.28"
 
 COPY . .
 

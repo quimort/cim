@@ -27,7 +27,7 @@ jobs:
         run: poetry run ruff format --check .
 
       - name: Types (mypy)
-        run: poetry run mypy app
+        run: poetry run mypy app scripts
 
       - name: Tests (pytest)
         run: poetry run pytest -v
