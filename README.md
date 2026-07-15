@@ -58,25 +58,6 @@ FX rates (Frankfurter/ECB) and writes them directly to Postgres. Idempotent —
 safe to re-run. See [`backend/scripts/README.md`](./backend/scripts/README.md)
 for usage and scheduling (cron / systemd timer).
 
-## Working with Claude Code
-
-Before assigning tasks, enable the plan→execute flow on the client (this
-is NOT configured in `CLAUDE.md` — it lives in Claude Code's config):
-
-1. **Opus-Plan mode**: in Claude Code, run `/model` and choose the option that
-   plans with Opus and executes with Sonnet ("use Opus in plan mode, Sonnet for
-   everything else"). This way plan reasoning uses the most capable model and
-   implementation drops to a faster, cheaper one.
-   - The effort level (low/medium/high/xhigh) is a separate setting, also
-     in `/model` (effort slider). Check your installation for which models and
-     levels are available — names and versions change.
-2. **Plan mode (explicit approval)**: `Shift+Tab` (or `/plan`) makes Claude
-   show you the plan and wait for your sign-off before touching files. Recommended
-   for tasks that introduce domain logic.
-
-The process discipline (explore → plan → approve → execute) is written
-in `CLAUDE.md` and the model follows it regardless; the *model selection* for
-each phase is set here, on the client.
 
 ## Status
 
