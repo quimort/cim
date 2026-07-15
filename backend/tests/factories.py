@@ -48,6 +48,8 @@ def make_instrument(
     expected_interest: str | None = None,
     maturity_date: date | None = None,
     category_id: int | None = None,
+    price_source: str | None = None,
+    provider_ref: str | None = None,
 ) -> Instrument:
     instrument = Instrument(
         name=f"instrument-{next(_counter)}",
@@ -56,6 +58,8 @@ def make_instrument(
         expected_interest=Decimal(expected_interest) if expected_interest is not None else None,
         maturity_date=maturity_date,
         category_id=category_id,
+        price_source=price_source,
+        provider_ref=provider_ref,
     )
     session.add(instrument)
     session.commit()

@@ -18,6 +18,7 @@ from app.services import categories as categories_service
 from app.services.errors import DomainRuleError, NotFoundError
 
 _LOAN_ONLY_FIELDS = ("maturity_date", "expected_interest", "status")
+_PRICING_FIELDS = ("price_source", "provider_ref")
 
 
 def _require_active_category(db: Session, category_id: int) -> None:
@@ -83,6 +84,19 @@ def update(db: Session, instrument_id: int, payload: InstrumentUpdate) -> Instru
     # null (uncategorise) is always fine.
     if changes.get("category_id") is not None:
         _require_active_category(db, changes["category_id"])
+
+    # Same reasoning as the loan-fields check above: only here do we see both
+    # the stored asset_class and the resulting (stored + changed) pricing pair.
+    if _PRICING_FIELDS[0] in changes or _PRICING_FIELDS[1] in changes:
+        final_source = changes.get("price_source", instrument.price_source)
+        final_ref = changes.get("provider_ref", instrument.provider_ref)
+        if (final_source is None) != (final_ref is None):
+            raise DomainRuleError("price_source and provider_ref must be set together")
+        if final_source is not None and instrument.asset_class != AssetClass.TRADABLE.value:
+            raise DomainRuleError(
+                f"price_source/provider_ref require asset_class=tradable, "
+                f"but instrument {instrument_id} is a {instrument.asset_class}"
+            )
 
     for field, value in changes.items():
         setattr(instrument, field, value)

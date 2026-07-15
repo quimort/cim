@@ -14,7 +14,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
-from app.models.enums import LoanStatus
+from app.models.enums import LoanStatus, PriceSource
 
 
 class Instrument(Base):
@@ -27,6 +27,11 @@ class Instrument(Base):
             f"status IS NULL OR status IN ({','.join(repr(v.value) for v in LoanStatus)})",
             name="ck_instrument_status",
         ),
+        CheckConstraint(
+            f"price_source IS NULL OR price_source IN "
+            f"({','.join(repr(v.value) for v in PriceSource)})",
+            name="ck_instrument_price_source",
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -37,6 +42,12 @@ class Instrument(Base):
 
     # The open grouping axis. Nullable: an instrument need not be categorised.
     category_id: Mapped[int | None] = mapped_column(ForeignKey("category.id"), index=True)
+
+    # Which provider the price batch script (task 1f) fetches quotes from, and
+    # the provider-specific identifier (yfinance ticker / CoinGecko coin id).
+    # NULL price_source means the batch skips this instrument entirely.
+    price_source: Mapped[str | None] = mapped_column(String(20))
+    provider_ref: Mapped[str | None] = mapped_column(String(100))
 
     # Loan-only fields, NULL for tradable/cash instruments.
     maturity_date: Mapped[date | None] = mapped_column(Date)

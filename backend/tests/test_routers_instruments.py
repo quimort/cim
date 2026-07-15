@@ -173,3 +173,98 @@ def test_asset_class_and_category_are_independent(client: TestClient) -> None:
     reit = _create(client, name="REIT", asset_class="tradable", category_id=real_estate)
     assert reit["asset_class"] == "tradable"
     assert reit["category_id"] == real_estate
+
+
+# --- price_source / provider_ref: routing for the price batch (task 1f) -------
+
+
+def test_create_with_price_source_and_provider_ref(client: TestClient) -> None:
+    instrument = _create(client, price_source="yfinance", provider_ref="VWCE.DE")
+    assert instrument["price_source"] == "yfinance"
+    assert instrument["provider_ref"] == "VWCE.DE"
+
+
+def test_pricing_fields_are_optional(client: TestClient) -> None:
+    instrument = _create(client)
+    assert instrument["price_source"] is None
+    assert instrument["provider_ref"] is None
+
+
+def test_price_source_without_provider_ref_is_rejected_at_create(client: TestClient) -> None:
+    response = client.post(
+        INSTRUMENTS,
+        json={
+            "name": "VWCE",
+            "asset_class": "tradable",
+            "currency": "EUR",
+            "price_source": "yfinance",
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_provider_ref_without_price_source_is_rejected_at_create(client: TestClient) -> None:
+    response = client.post(
+        INSTRUMENTS,
+        json={
+            "name": "VWCE",
+            "asset_class": "tradable",
+            "currency": "EUR",
+            "provider_ref": "VWCE.DE",
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_pricing_fields_on_a_non_tradable_are_rejected_at_create(client: TestClient) -> None:
+    response = client.post(
+        INSTRUMENTS,
+        json={
+            "name": "EUR cash",
+            "asset_class": "cash",
+            "currency": "EUR",
+            "price_source": "yfinance",
+            "provider_ref": "n/a",
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_pricing_fields_on_a_stored_non_tradable_are_rejected_at_patch(client: TestClient) -> None:
+    """asset_class is immutable and lives in the DB — only the service catches this."""
+    instrument = _create(client, name="EUR cash", asset_class="cash")
+    response = client.patch(
+        f"{INSTRUMENTS}/{instrument['id']}",
+        json={"price_source": "yfinance", "provider_ref": "n/a"},
+    )
+    assert response.status_code == 422
+    assert "asset_class=tradable" in response.json()["detail"]
+
+
+def test_patch_sets_and_clears_pricing_fields(client: TestClient) -> None:
+    instrument = _create(client)
+
+    set_response = client.patch(
+        f"{INSTRUMENTS}/{instrument['id']}",
+        json={"price_source": "coingecko", "provider_ref": "bitcoin"},
+    )
+    assert set_response.status_code == 200
+    assert set_response.json()["price_source"] == "coingecko"
+    assert set_response.json()["provider_ref"] == "bitcoin"
+
+    clear_response = client.patch(
+        f"{INSTRUMENTS}/{instrument['id']}",
+        json={"price_source": None, "provider_ref": None},
+    )
+    assert clear_response.status_code == 200
+    assert clear_response.json()["price_source"] is None
+    assert clear_response.json()["provider_ref"] is None
+
+
+def test_patch_provider_ref_alone_leaving_inconsistent_state_is_rejected(
+    client: TestClient,
+) -> None:
+    instrument = _create(client, price_source="yfinance", provider_ref="VWCE.DE")
+
+    response = client.patch(f"{INSTRUMENTS}/{instrument['id']}", json={"provider_ref": None})
+    assert response.status_code == 422

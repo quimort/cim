@@ -13,7 +13,7 @@ from typing import Self
 
 from pydantic import Field, model_validator
 
-from app.models.enums import AssetClass, LoanStatus
+from app.models.enums import AssetClass, LoanStatus, PriceSource
 from app.schemas.common import CurrencyCode, InterestRate, MoneyStr, RequestSchema, ResponseSchema
 
 
@@ -31,6 +31,16 @@ class InstrumentCreate(RequestSchema):
     expected_interest: InterestRate | None = Field(default=None, description="Loan only.")
     status: LoanStatus | None = Field(
         default=None, description="Loan only. Defaults to 'active' when omitted."
+    )
+    price_source: PriceSource | None = Field(
+        default=None,
+        description="Market-data provider for the price batch script. Tradable only.",
+    )
+    provider_ref: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=100,
+        description="Provider-specific id (yfinance ticker, CoinGecko coin id). Tradable only.",
     )
 
     @model_validator(mode="after")
@@ -51,12 +61,21 @@ class InstrumentCreate(RequestSchema):
                 raise ValueError(f"{', '.join(sorted(set_fields))} require asset_class=loan")
         return self
 
+    @model_validator(mode="after")
+    def _enforce_pricing_fields(self) -> Self:
+        if (self.price_source is None) != (self.provider_ref is None):
+            raise ValueError("price_source and provider_ref must be set together")
+        if self.price_source is not None and self.asset_class is not AssetClass.TRADABLE:
+            raise ValueError("price_source/provider_ref require asset_class=tradable")
+        return self
+
 
 class InstrumentUpdate(RequestSchema):
     """PATCH semantics. ``asset_class`` and ``currency`` are immutable.
 
-    Loan fields cannot be cross-checked against the stored ``asset_class`` here
-    (the schema doesn't see the DB row); the router/service enforces that.
+    Loan and pricing fields cannot be cross-checked against the stored
+    ``asset_class`` here (the schema doesn't see the DB row); the service
+    enforces that against the stored row plus these changes.
     """
 
     name: str | None = Field(default=None, min_length=1, max_length=200)
@@ -68,6 +87,8 @@ class InstrumentUpdate(RequestSchema):
     maturity_date: date | None = None
     expected_interest: InterestRate | None = None
     status: LoanStatus | None = None
+    price_source: PriceSource | None = None
+    provider_ref: str | None = Field(default=None, min_length=1, max_length=100)
 
 
 class InstrumentRead(ResponseSchema):
@@ -80,5 +101,7 @@ class InstrumentRead(ResponseSchema):
     maturity_date: date | None
     expected_interest: MoneyStr | None
     status: LoanStatus | None
+    price_source: PriceSource | None
+    provider_ref: str | None
     is_active: bool
     created_at: datetime
