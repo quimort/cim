@@ -204,6 +204,8 @@ not here. See README.
 - Before considering a task done: tests pass, the linter passes, types
   (mypy / tsc) pass. That's the loop: write -> verify -> fix.
 - Schema migrations: ALWAYS via Alembic, never manual changes to the DB.
+- Pull requests: ALWAYS use the GitHub CLI (`gh pr create`, `gh pr ...`),
+  never the web UI or other tooling.
 
 ---
 
